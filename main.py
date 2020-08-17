@@ -4,6 +4,7 @@
 # Press Double ⇧ to search everywhere for classes, files, tool windows, actions, and settings.
 from enum import Enum
 import re
+import pdb
 
 
 def print_hi(name):
@@ -38,7 +39,8 @@ class State(Enum):
 
 
 def split_lines(path) -> [Item]:
-    """ 这个函数可以按行
+    """ 分离不同代码段
+    这个函数可以按行
     分离不同类型的代码
 
     :param path: str: 输入文件目录
@@ -177,11 +179,21 @@ def analysis_rest(docstring):
     statement = ""
     now = "statement"
     info = {}
+    first_line = "true"
     for line in lines:
         s = line.strip()
+        if first_line == "true":
+            first_line = "false"
+            if s == "":
+                continue
+            docstring.info.setdefault("summary", s)
+            continue
         if s.startswith(":"):
             statement = statement.strip(" \n")
             if now == "statement":
+                if statement == "":
+                    now = ""
+                    continue
                 docstring.info.setdefault(now, statement)
                 statement = ""
                 now = ""
@@ -270,6 +282,50 @@ if __name__ == '__main__':
     res = split_lines("./main.py")
     res = analysis_function(res)
     res = analysis_docstring(res)
+    '''
+    SORRY FOR MY POOR ENGLISH
+    
+    res : list of Item
+    
+    class Item:
+        def __init__(self, start=0, end=0, types=ItemType.Normal, text="", info={}):
+            self.types = types
+            self.start = start
+            self.end = end
+            self.text = text
+            self.info = info
+            
+    types: type of item
+        class ItemType(Enum):
+            Function = 0            class or function
+            Docstring = 1           docstring means all comment with multiline, maybe not real docstring. 
+                                    a Docstring is a docstring only when it's after function
+            Normal = 2              just normal code
+    start: start line of item
+    end: end line of item
+    text: raw text of item
+    info: other infos
+        for Function:
+            params: map of params
+                key: param name
+                value: map of other info
+                    key: "default" if has default value
+                    value: default value of param
+            rtypeHint: list of return type hint
+        for docstring:
+            all info of it's function (params/rtypeHint)
+            lim: it's quotation marks type ( ' ' ' or " " ")
+            summary: summary if it has summary(all " " and "\n" at front and back will be removed)
+            statement:  Description if it has description(all " " and "\n" at front and back will be removed,
+                        others will be kept)
+            contains: list of other item
+                type: (param/return/raise or others)
+                name: it's name. like param name / return name / raise name or others
+                p_type: it's type(if it has a type)
+                statement:  Description if it has description(all " " and "\n" at front and back will be removed, 
+                            others will be kept)
+                
+    '''
     res = parser_format(res)
     print(res)
 
