@@ -4,7 +4,6 @@
 # Press Double ⇧ to search everywhere for classes, files, tool windows, actions, and settings.
 from enum import Enum
 import re
-import pdb
 
 
 def print_hi(name):
@@ -137,8 +136,18 @@ def analysis_function(items):
                 if param.count("=") != 0:
                     pos = param.find("=")
                     info.setdefault('params', {})
-                    info['params'].setdefault(param[:pos], {})
-                    info['params'][param[:pos]].setdefault('default', param[pos + 1:])
+                    if param.count(":") != 0:
+                        mpos = param.find(":")
+                        info['params'].setdefault(param[:mpos].strip(), {})
+                        info['params'][param[:pos]].setdefault('type', param[mpos + 1:pos].strip())
+                    else:
+                        info['params'].setdefault(param[:pos].strip(), {})
+                    info['params'][param[:pos]].setdefault('default', param[pos + 1:].strip())
+                elif param.count(":") != 0:
+                    pos = param.find(":")
+                    info.setdefault('params', {})
+                    info['params'].setdefault(param[:pos].strip(), {})
+                    info['params'][param[:pos]].setdefault('type', param[pos + 1:].strip())
                 else:
                     info.setdefault('params', {})
                     info['params'].setdefault(param, {})
@@ -166,8 +175,35 @@ def analysis_function(items):
     return items
 
 
+google_headers = {
+    "Args": "param",
+    "Returns": "return",
+    "Raises": "raise",
+}
+
+
 def judge_docstring(docstring) -> str:
     # TODO 配置自动判断docstring类型
+    lines = docstring.text.split("\n")
+    rest = 0
+    epytext = 0
+    google = 0
+    for i in lines:
+        s = i.strip(" \n")
+        if s == "":
+            continue
+        if s[0] == ":":
+            rest += 1
+        if s[0] == "@":
+            epytext += 1
+        if s[:-1] in google_headers:
+            google += 1
+    if max(rest, epytext, google) == rest:
+        return "reST"
+    elif max(rest, epytext, google) == epytext:
+        return "Epytext"
+    elif max(rest, epytext, google) == google:
+        return "Google"
     return "reST"
 
 
@@ -191,11 +227,9 @@ def analysis_rest(docstring):
         if s.startswith(":"):
             statement = statement.strip(" \n")
             if now == "statement":
-                if statement == "":
-                    now = ""
-                    continue
-                docstring.info.setdefault(now, statement)
-                statement = ""
+                if statement != "":
+                    docstring.info.setdefault(now, statement)
+                    statement = ""
                 now = ""
             else:
                 docstring.info.setdefault("contains", [])
@@ -249,7 +283,88 @@ def analysis_rest(docstring):
     return docstring
 
 
-style_func = {"reST": analysis_rest}
+def analysis_epytext(docstring):
+    assert type(docstring) == Item
+    s = docstring.text
+    s = s.strip(docstring.info["lim"] + " \n")
+    lines = s.split("\n")
+    statement = ""
+    now = "statement"
+    info = {}
+    first_line = "true"
+    for line in lines:
+        s = line.strip()
+        if first_line == "true":
+            first_line = "false"
+            if s == "":
+                continue
+            docstring.info.setdefault("summary", s)
+            continue
+        if s.startswith("@"):
+            statement = statement.strip(" \n")
+            if now == "statement":
+                if statement != "":
+                    docstring.info.setdefault(now, statement)
+                    statement = ""
+                now = ""
+            else:
+                docstring.info.setdefault("contains", [])
+                docstring.info["contains"].append({"type": now})
+                for k in info:
+                    docstring.info["contains"][-1][k] = info[k]
+                docstring.info["contains"][-1]["statement"] = statement
+                now = ""
+                statement = ""
+            info = {}
+            # s1: 分离statement
+            s1 = s[1:]
+            # s2: 使用:进行划分
+            s2 = s1.split(":")
+            key = ""
+            name = ""
+            p_type = ""
+            if len(s2[0].split(" ")) == 1:
+                key = s2[0]
+            else:
+                s3 = s2[0].split(" ")
+                key = s3[0]
+                name = s3[1]
+            pos = s1.find(":")
+            s1 = s1[pos + 1:]
+            if len(s2) >= 3 and len(s2[1].strip().split(" ")) == 1:
+                p_type = s2[1].strip()
+                pos = s1.find(":")
+                s1 = s1[pos + 1:]
+            now = key
+            if name != "":
+                info["name"] = name
+            if p_type != "":
+                info["p_type"] = p_type
+            statement = s1
+        else:
+            statement += line + "\n"
+    statement = statement.strip(" \n")
+    if now == "statement":
+        docstring.info.setdefault(now, statement)
+        statement = ""
+        now = ""
+    else:
+        docstring.info.setdefault("contains", [])
+        docstring.info["contains"].append({"type": now})
+        for k in info:
+            docstring.info["contains"][-1][k] = info[k]
+        docstring.info["contains"][-1]["statement"] = statement
+        now = ""
+        statement = ""
+    return docstring
+
+
+def analysis_google(docstring):
+    # TODO: Google
+    return docstring
+
+
+style_func = {"reST": analysis_rest, "Epytext": analysis_epytext, "Google": analysis_google}
 
 
 def merge_info(info1, info2):
@@ -329,4 +444,50 @@ if __name__ == '__main__':
     res = parser_format(res)
     print(res)
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+
+# 以下是测试用例
+
+def func_epytext(param1: int, param2='default val') -> bool:
+    """This is an example function with docstrings in Epytext(javadoc-like) style.
+
+    @param param1: int: This is the first parameter.
+    @param param2: This is the second parameter. (Default value = 'default val')
+    @return: The return value. True for success, False otherwise.
+    @rtype: bool
+    @raise keyError: raises key exception
+    @raise TypeError: raises type exception
+
+    """
+    pass
+
+
+def func_rest(param1: int, param2='default val') -> bool:
+    """This is an example function with docstrings in reST style.
+
+    :param param1: int: This is the first parameter.
+    :param param2: This is the second parameter. (Default value = 'default val')
+    :returns: The return value. True for success, False otherwise.
+    :rtype: bool
+    :raises keyError: raises key exception
+    :raises TypeError: raises type exception
+
+    """
+    pass
+
+
+def func_google(param1: int, param2='default val') -> bool:
+    """This is an example function with docstrings in Google style.
+
+    Args:
+      param1: int: This is the first parameter.
+      param2: This is the second parameter. (Default value = 'default val')
+
+    Returns:
+      bool: The return value. True for success, False otherwise.
+
+    Raises:
+      keyError: raises key exception
+      TypeError: raises type exception
+
+    """
+    pass
