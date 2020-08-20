@@ -71,7 +71,7 @@ def split_lines(path) -> [Item]:
                     start = index + 1
                     text = ''
 
-            elif l.startswith('def ') or l.startswith('class '):
+            elif l.startswith('def ') or l.startswith('class ') or l.startswith('async def'):
                 if text != '':
                     ret.append(Item(start=start, end=index - 1, types=ItemType.Normal, text=text))
                     start = index
