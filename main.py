@@ -136,15 +136,15 @@ def analysis_function(items):
                 if param.count("=") != 0:
                     pos = param.find("=")
                     info.setdefault('params', {})
-                    if param.count(":") != 0:
-                        mpos = param.find(":")
+                    if param.count(": ") != 0:
+                        mpos = param.find(": ")
                         info['params'].setdefault(param[:mpos].strip(), {})
                         info['params'][param[:pos]].setdefault('type', param[mpos + 1:pos].strip())
                     else:
                         info['params'].setdefault(param[:pos].strip(), {})
                     info['params'][param[:pos]].setdefault('default', param[pos + 1:].strip())
-                elif param.count(":") != 0:
-                    pos = param.find(":")
+                elif param.count(": ") != 0:
+                    pos = param.find(": ")
                     info.setdefault('params', {})
                     info['params'].setdefault(param[:pos].strip(), {})
                     info['params'][param[:pos]].setdefault('type', param[pos + 1:].strip())
@@ -178,6 +178,7 @@ def analysis_function(items):
 google_headers = {
     "Args": "param",
     "Returns": "return",
+    "Yields": "yield",
     "Raises": "raise",
 }
 
@@ -225,7 +226,7 @@ def analysis_rest(docstring):
             docstring.info.setdefault("summary", s)
             continue
         if s.startswith(":"):
-            statement = statement.strip(" \n")
+            statement = statement.strip(" ")
             if now == "statement":
                 if statement != "":
                     docstring.info.setdefault(now, statement)
@@ -267,7 +268,7 @@ def analysis_rest(docstring):
             statement = s1
         else:
             statement += line + "\n"
-    statement = statement.strip(" \n")
+    statement = statement.strip(" ")
     if now == "statement":
         docstring.info.setdefault(now, statement)
         statement = ""
@@ -301,7 +302,7 @@ def analysis_epytext(docstring):
             docstring.info.setdefault("summary", s)
             continue
         if s.startswith("@"):
-            statement = statement.strip(" \n")
+            statement = statement.strip(" ")
             if now == "statement":
                 if statement != "":
                     docstring.info.setdefault(now, statement)
@@ -343,7 +344,7 @@ def analysis_epytext(docstring):
             statement = s1
         else:
             statement += line + "\n"
-    statement = statement.strip(" \n")
+    statement = statement.strip(" ")
     if now == "statement":
         docstring.info.setdefault(now, statement)
         statement = ""
@@ -359,8 +360,141 @@ def analysis_epytext(docstring):
     return docstring
 
 
+def get_space(line: str) -> int:
+    ret = 0
+    s = line
+    while len(s) > 0 and s[0] == " ":
+        ret += 1
+        s = s[1:]
+    return ret
+
+
 def analysis_google(docstring):
-    # TODO: Google
+    header_set = {
+        "Args:",
+        "Returns:",
+        "Yields:",
+        "Raises:",
+    }
+    assert type(docstring) == Item
+    s = docstring.text
+    spacef = get_space(s)
+    spacep = 0
+    s = s.strip(docstring.info["lim"] + " \n")
+    lines = s.split("\n")
+    statement = ""
+    now = "statement"
+    info = {}
+    first_line = "true"
+    header_type = ""
+    next_header = "false"
+    for line in lines:
+        s = line
+        if first_line == "true":
+            first_line = "false"
+            if s == "":
+                continue
+            docstring.info.setdefault("summary", s)
+            continue
+        if s.strip() in header_set and spacef == get_space(s):
+            next_header = "true"
+            s = s.strip()[:-1]
+            header_type = google_headers[s]
+            statement = statement.strip(" ")
+            if now == "statement":
+                if statement != "":
+                    docstring.info.setdefault(now, statement)
+                    statement = ""
+                now = ""
+            else:
+                docstring.info.setdefault("contains", [])
+                docstring.info["contains"].append({"type": now})
+                for k in info:
+                    docstring.info["contains"][-1][k] = info[k]
+                docstring.info["contains"][-1]["statement"] = statement
+                now = ""
+                statement = ""
+            now = header_type
+        elif header_type == "return" or header_type == "yield":
+            if next_header == "true":
+                next_header = "false"
+                info = {}
+                s = s.strip()
+                if s.find(": "):
+                    s1 = s[:s.find(": ")].strip()
+                    next_header = "false"
+                    docstring.info.setdefault("contains", [])
+                    docstring.info["contains"].append({"type": "rtype"})
+                    docstring.info["contains"][-1]["statement"] = s1
+                    now = {"return": "returns", "yield": "yields"}[header_type]
+                    statement += s[s.find(": ") + 2:] + "\n"
+                else:
+                    statement += s + "\n"
+            else:
+                statement += line + "\n"
+
+        elif header_type != "" and s.find(":") != -1 and (spacep == 0 or spacep == get_space(s)) and (
+                (len(s[:s.find(":")].strip()) != 0 and s[:s.find(":")].strip().count(" ") == 0) or (
+                len(s[:s.find(":")].strip()) != 0 and s[:s.find(":")].strip().count("(") != 0 and
+                s[:s[:s.find(":")].strip().find("(")].strip().count(" ") != 0)):
+            if next_header != "true":
+                statement = statement.strip(" ")
+                docstring.info.setdefault("contains", [])
+                docstring.info["contains"].append({"type": now})
+                for k in info:
+                    docstring.info["contains"][-1][k] = info[k]
+                docstring.info["contains"][-1]["statement"] = statement
+                now = ""
+                statement = ""
+
+            info = {}
+            s = s.strip()
+            s1 = s[:s.find(": ")].strip()
+            s2 = s[s.find(": ") + 2:].strip()
+            name = ""
+            p_type = ""
+            if s1.find("(") != -1:
+                name = s1[:s1.find("(")].strtp()
+                p_type = s1[s1.find("(") + 1:s1.rfind(")")].strip()
+            elif s2[:s2.find(": ")].strip().count(" ") == 0:
+                name = s1
+                p_type = s2[:s2.find(": ")].strip()
+                s2 = s2[s2.find(": ") + 2:]
+            else:
+                name = s1
+            if header_type == "param":
+                info["name"] = name
+                if p_type != "":
+                    info["p_type"] = p_type
+                now = header_type
+            # elif header_type == "return":
+            #     docstring.info.setdefault("contains", [])
+            #     docstring.info["contains"].append({"type": "rtype"})
+            #     docstring.info["contains"][-1]["statement"] = s1
+            #     now = "returns"
+            # elif header_type == "yield":
+            #     now = "yield"
+            elif header_type == "raise":
+                info["name"] = name
+                now = "raises"
+            statement = s2
+            next_header = "false"
+        else:
+            statement += line + "\n"
+    statement = statement.strip(" ")
+    if now == "statement":
+        if statement != "":
+            docstring.info.setdefault(now, statement)
+            statement = ""
+        now = ""
+    else:
+        docstring.info.setdefault("contains", [])
+        docstring.info["contains"].append({"type": now})
+        for k in info:
+            docstring.info["contains"][-1][k] = info[k]
+        docstring.info["contains"][-1]["statement"] = statement
+        now = ""
+        statement = ""
     return docstring
 
 
@@ -463,6 +597,11 @@ def func_epytext(param1: int, param2='default val') -> bool:
 
 def func_rest(param1: int, param2='default val') -> bool:
     """This is an example function with docstrings in reST style.
+
+    Life can be good,
+    Life can be bad,
+    Life can mostly cheerful,
+    But sometimes sad.
 
     :param param1: int: This is the first parameter.
     :param param2: This is the second parameter. (Default value = 'default val')
