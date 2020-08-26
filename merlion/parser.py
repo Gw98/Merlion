@@ -1,3 +1,4 @@
+import json
 from enum import Enum
 import re
 
@@ -524,23 +525,33 @@ def merge_info(info1, info2):
 
 
 def analysis_docstring(items):
+    ret = []
     for i, item in enumerate(items):
         if items[i].types == ItemType.Docstring and i > 0 and items[i - 1].types == ItemType.Function:
             item.info = merge_info(item.info, items[i - 1].info)
             style = judge_docstring(item)
-            item = style_func[style](item)
-    return items
+            ret.append(style_func[style](item))
+    return ret
+
+
+def load_file_to_string(file):
+    file_object = open(file)
+    try:
+        file_context = file_object.read()
+    finally:
+        file_object.close()
+    return file_context
 
 
 def parser(path):
     res = split_lines(path)
     res = analysis_function(res)
     res = analysis_docstring(res)
-    return res
+    return res, load_file_to_string(path), path
 
 
 if __name__ == '__main__':
-    print(parser("./main.py"))
+    print(parser("./parser.py"))
     '''
     SORRY FOR MY POOR ENGLISH
 
@@ -556,16 +567,17 @@ if __name__ == '__main__':
 
     types: type of item
         class ItemType(Enum):
-            Function = 0            class or function
+            Function = 0            class or function (will not return)
             Docstring = 1           docstring means all comment with multiline, maybe not real docstring. 
-                                    a Docstring is a docstring only when it's after function
-            Normal = 2              just normal code
+                                    a Docstring is a docstring only when it's after function (only return
+                                    real docstring)
+            Normal = 2              just normal code (will not return)
     start: start line of item
     end: end line of item
     text: raw text of item
     indentation: indentation of docstring
     info: other infos
-        for Function:
+        for Function: ( Will be discarded )
             params: map of params
                 key: param name
                 value: map of other info
@@ -587,8 +599,8 @@ if __name__ == '__main__':
 
     '''
 
+    # The following is the test case.
 
-# The following is the test case.
 
 def func_epytext(param1: int, param2='default val') -> bool:
     """This is an example function with docstrings in Epytext(javadoc-like) style.
