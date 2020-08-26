@@ -4,8 +4,25 @@ import difflib
 import fnmatch
 import os
 
+from formatter import NumpydocFormatter, GoogleFormatter, reSTFormatter
+from parser import NumpydocParser, GoogleParser, reSTParser
+
 from redbaron.nodes import ClassNode, CommentNode, DefNode, StringNode
 from redbaron.redbaron import RedBaron
+
+
+PARSER_STYLE_LIST = {
+    'google': GoogleParser,
+    'numpy': NumpydocParser,
+    'reST': reSTParser,
+}
+
+
+FORMATTER_STYLE_LIST = {
+    'google': GoogleFormatter,
+    'numpy': NumpydocFormatter,
+    'reST': reSTFormatter,
+}
 
 
 class Merlion(object):
@@ -19,6 +36,9 @@ class Merlion(object):
         """
         self.paths = {}
         self.dstpaths = {}
+
+        self.parser = PARSER_STYLE_LIST['numpy']()
+        self.formatter = FORMATTER_STYLE_LIST['google']()
 
 
     def load(self, dirs, patterns=['*.py', '*.pyi'], ignores=None):
@@ -137,19 +157,19 @@ class Merlion(object):
     def process_module(self, node):
         docstring_node = self.get_docstring_node(node)
         if docstring_node:
-            docstring_node.value = '"""BTS"""'
+            self.process_node_with_docstring(docstring_node)
 
 
     def process_class(self, node):
         docstring_node = self.get_docstring_node(node)
         if docstring_node:
-            docstring_node.value = '"""BTS"""'
+            self.process_node_with_docstring(docstring_node)
 
 
     def process_func(self, node):
         docstring_node = self.get_docstring_node(node)
         if docstring_node:
-            docstring_node.value = '"""BTS"""'
+            self.process_node_with_docstring(docstring_node)
 
 
     def get_docstring_node(self, node):
@@ -172,6 +192,22 @@ class Merlion(object):
             if isinstance(subnode, CommentNode):
                 continue
             return None
+
+
+    def process_node_with_docstring(self, node):
+        """[summary]
+
+        Args:
+            node ([type]): [description]
+
+        Raises:
+            Exception: [description]
+        """
+        if not isinstance(node, StringNode): 
+            raise Exception('invalide string node')
+        indent = 0  # TODO
+        docstring = self.parser.parse(node.value)
+        node.value = self.formatter.format(docstring)
 
     
     def output(self):
