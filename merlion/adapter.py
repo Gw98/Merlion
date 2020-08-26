@@ -1,8 +1,5 @@
 from format import *
-
-class Item:
-    pass
-
+from parser import Item, ItemType
 
 class Adapter(object):
     def __init__(self):
@@ -12,9 +9,8 @@ class Adapter(object):
     def adapter(self, items):
         for item in items:
             docstring = self.generate_docstring(item)
-            import pdb
-            pdb.set_trace()
-            self.docstrings.append(docstring)
+            if docstring:
+                self.docstrings.append(docstring)
 
 
     def generate_docstring(self, item):
@@ -44,10 +40,14 @@ class Adapter(object):
         start = item.get('start', 0)
         end = item.get('end', 0)
 
+        type = item.get('types')
+        if type != ItemType.Docstring:
+            return None
+
         info = item.get('info')
         summary  = info.get('summary')
         description = info.get('description')
-        elements = info.get('contains')
+        elements = info.get('contains', [])
         docstring = Docstring(start, end, 0, summary, description)    # TODO
 
         for element in elements:
