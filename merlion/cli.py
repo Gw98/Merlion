@@ -7,6 +7,7 @@ from merlion import Merlion
 
 from parser import split_lines, analysis_function, analysis_docstring
 from adapter import Adapter
+from format import File, DocstringStyle
 
 
 def main():
@@ -26,10 +27,8 @@ def main():
     adpt = Adapter()
     adpt.adapter(res)
 
-    # file = File(input_file_name="parser.py", prog=["def func(param0:int = 10, param1 = \"string\") -> bool:\n",
-    #                                          "\"\"\" docstring\n", "\"\"\"\n", "pass\n"], docs_list=[docstring], target_style=DocstringStyle.Numpydoc)
-
-    # file.format()
+    file = File(input_file_name="parser.py", docs_list=adpt.docstrings, target_style=DocstringStyle.Numpydoc)
+    file.format()
 
     return 0
 
