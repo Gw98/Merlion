@@ -27,7 +27,9 @@ def main():
     adpt = Adapter()
     adpt.adapter(res)
 
-    file = File(input_file_name="parser.py", docs_list=adpt.docstrings, target_style=DocstringStyle.Numpydoc)
+    # File.program is needed
+    file = File(input_file_name="parser.py", docs_list=adpt.docstrings,
+                target_style=DocstringStyle.Numpydoc)
     file.format()
 
     return 0

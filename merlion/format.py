@@ -107,7 +107,7 @@ class DocstringRaise():
         self.description = description
 
     def _strip(self) -> None:
-        self.type_name = self.type_name.strip()
+        self.type_name = str(self.type_name).strip()
         if self.description is not None:
             self.description = str(self.description).strip()
 
@@ -335,8 +335,9 @@ class Docstring:
                         string_0 = content.name
                         string_1 = content.description
 
-                appendWarppedString2List(
-                    output, string_0, max_char, tabs, "")
+                if string_0 is not None:
+                    appendWarppedString2List(
+                        output, string_0, max_char, tabs, "")
                 if string_1 is not None:
                     appendWarppedString2List(
                         output, string_1, max_char, tabs + tab, "")
