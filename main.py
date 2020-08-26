@@ -1,14 +1,14 @@
-# This is a sample Python script.
-
-# Press ⌃R to execute it or replace it with your code.
-# Press Double ⇧ to search everywhere for classes, files, tool windows, actions, and settings.
 from enum import Enum
 import re
 
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press ⌘F8 to toggle the breakpoint.
+def get_space(line: str) -> int:
+    ret = 0
+    s = line
+    while len(s) > 0 and s[0] == " ":
+        ret += 1
+        s = s[1:]
+    return ret
 
 
 def load_file(path):
@@ -29,6 +29,7 @@ class Item:
         self.end = end
         self.text = text
         self.info = info
+        self.indentation = get_space(text)
 
 
 class State(Enum):
@@ -38,13 +39,6 @@ class State(Enum):
 
 
 def split_lines(path) -> [Item]:
-    """ 分离不同代码段
-    这个函数可以按行
-    分离不同类型的代码
-
-    :param path: str: 输入文件目录
-    :return split_lines: str: 分离后的代码
-    """
     lines = load_file(path)
     ret = []
     state = State.Normal
@@ -327,15 +321,6 @@ def analysis_epytext(docstring):
     return docstring
 
 
-def get_space(line: str) -> int:
-    ret = 0
-    s = line
-    while len(s) > 0 and s[0] == " ":
-        ret += 1
-        s = s[1:]
-    return ret
-
-
 google_headers = {
     "Args": "param",
     "Arg": "param",
@@ -547,18 +532,15 @@ def analysis_docstring(items):
     return items
 
 
-def parser_format(items):
-    # TODO 转换
-    return items
-
-
-# Press the green button in the gutter to run the script.
-
-if __name__ == '__main__':
-    print_hi('PyCharm')
-    res = split_lines("./main.py")
+def parser(path):
+    res = split_lines(path)
     res = analysis_function(res)
     res = analysis_docstring(res)
+    return res
+
+
+if __name__ == '__main__':
+    print(parser("./main.py"))
     '''
     SORRY FOR MY POOR ENGLISH
     
@@ -581,6 +563,7 @@ if __name__ == '__main__':
     start: start line of item
     end: end line of item
     text: raw text of item
+    indentation: indentation of docstring
     info: other infos
         for Function:
             params: map of params
@@ -596,18 +579,16 @@ if __name__ == '__main__':
             statement:  Description if it has description(all " " and "\n" at front and back will be removed,
                         others will be kept)
             contains: list of other item
-                type: (param/return/raise or others)
+                type: (param/return/raise/yield/example/note/attribute or others)
                 name: it's name. like param name / return name / raise name or others
                 p_type: it's type(if it has a type)
                 statement:  Description if it has description(all " " and "\n" at front and back will be removed, 
                             others will be kept)
                 
     '''
-    res = parser_format(res)
-    print(res)
 
 
-# 以下是测试用例
+# The following is the test case.
 
 def func_epytext(param1: int, param2='default val') -> bool:
     """This is an example function with docstrings in Epytext(javadoc-like) style.
