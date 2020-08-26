@@ -111,6 +111,8 @@ class DocstringRaise():
         if self.description is not None:
             self.description = str(self.description).strip()
 
+# TODO: quote, empty str, string divede
+
 
 class DocstringOther():
     """Example, Todo, Note ...
@@ -165,7 +167,7 @@ class Docstring:
     """the abstraction of a docstring
 
     Attributes:
-        start_line(int): this docstring was in [start_line, end_line) in the origin program
+        start_line(int): this docstring was in [start_line, end_line) in the origin program. The index of line start from 0.
         tab_cnt(int): this docstring's first line begins with tab_cnt tabs
         summary: the short summary, usually the first line of the docstring
         description: the longer and detailed description, usually the second paragraph of the docstring
@@ -372,6 +374,7 @@ class File:
 
     def __init__(
         self,
+        #
         input_file_name: str = None,  # input file's name
         source_path: str = "",
         target_path: str = "",
