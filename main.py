@@ -175,39 +175,6 @@ def analysis_function(items):
     return items
 
 
-google_headers = {
-    "Args": "param",
-    "Returns": "return",
-    "Yields": "yield",
-    "Raises": "raise",
-}
-
-
-def judge_docstring(docstring) -> str:
-    # TODO 配置自动判断docstring类型
-    lines = docstring.text.split("\n")
-    rest = 0
-    epytext = 0
-    google = 0
-    for i in lines:
-        s = i.strip(" \n")
-        if s == "":
-            continue
-        if s[0] == ":":
-            rest += 1
-        if s[0] == "@":
-            epytext += 1
-        if s[:-1] in google_headers:
-            google += 1
-    if max(rest, epytext, google) == rest:
-        return "reST"
-    elif max(rest, epytext, google) == epytext:
-        return "Epytext"
-    elif max(rest, epytext, google) == google:
-        return "Google"
-    return "reST"
-
-
 def analysis_rest(docstring):
     assert type(docstring) == Item
     s = docstring.text
@@ -369,12 +336,44 @@ def get_space(line: str) -> int:
     return ret
 
 
+google_headers = {
+    "Args": "param",
+    "Arg": "param",
+    "Returns": "return",
+    "Return": "return",
+    "Yields": "yield",
+    "Yield": "yield",
+    "Raises": "raise",
+    "Raise": "raise",
+
+    "Example": "example",
+    "Examples": "example",
+    "Note": "note",
+    "Notes": "note",
+
+    "Attributes": "attribute",
+    "Attribute": "attribute",
+}
+
+
 def analysis_google(docstring):
     header_set = {
         "Args:",
         "Returns:",
         "Yields:",
         "Raises:",
+        "Arg:",
+        "Return:",
+        "Yield:",
+        "Raise:",
+
+        "Example:",
+        "Examples:",
+        "Note:",
+        "Notes:",
+
+        "Attributes:",
+        "Attribute:",
     }
     assert type(docstring) == Item
     s = docstring.text
@@ -415,7 +414,12 @@ def analysis_google(docstring):
                 now = ""
                 statement = ""
             now = header_type
-        elif header_type == "return" or header_type == "yield":
+            info = {}
+
+        elif header_type in {"example", "note"}:  # statement
+            statement += line + "\n"
+
+        elif header_type == "return" or header_type == "yield":  # type:statement
             if next_header == "true":
                 next_header = "false"
                 info = {}
@@ -436,7 +440,7 @@ def analysis_google(docstring):
         elif header_type != "" and s.find(":") != -1 and (spacep == 0 or spacep == get_space(s)) and (
                 (len(s[:s.find(":")].strip()) != 0 and s[:s.find(":")].strip().count(" ") == 0) or (
                 len(s[:s.find(":")].strip()) != 0 and s[:s.find(":")].strip().count("(") != 0 and
-                s[:s[:s.find(":")].strip().find("(")].strip().count(" ") != 0)):
+                s[:s[:s.find(":")].strip().find("(")].strip().count(" ") != 0)):  # name(:type):statement
             if next_header != "true":
                 statement = statement.strip(" ")
                 docstring.info.setdefault("contains", [])
@@ -462,7 +466,7 @@ def analysis_google(docstring):
                 s2 = s2[s2.find(": ") + 2:]
             else:
                 name = s1
-            if header_type == "param":
+            if header_type == "param" or header_type == "attribute":
                 info["name"] = name
                 if p_type != "":
                     info["p_type"] = p_type
@@ -496,6 +500,30 @@ def analysis_google(docstring):
         now = ""
         statement = ""
     return docstring
+
+
+def judge_docstring(docstring) -> str:
+    lines = docstring.text.split("\n")
+    rest = 0
+    epytext = 0
+    google = 0
+    for i in lines:
+        s = i.strip(" \n")
+        if s == "":
+            continue
+        if s[0] == ":":
+            rest += 1
+        if s[0] == "@":
+            epytext += 1
+        if s[:-1] in google_headers:
+            google += 1
+    if max(rest, epytext, google) == rest:
+        return "reST"
+    elif max(rest, epytext, google) == epytext:
+        return "Epytext"
+    elif max(rest, epytext, google) == google:
+        return "Google"
+    return "reST"
 
 
 style_func = {"reST": analysis_rest, "Epytext": analysis_epytext, "Google": analysis_google}
@@ -628,5 +656,7 @@ def func_google(param1: int, param2='default val') -> bool:
       keyError: raises key exception
       TypeError: raises type exception
 
+    Note:
+      This is a note
     """
     pass
