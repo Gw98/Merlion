@@ -2,8 +2,6 @@
 import argparse
 import sys
 
-from merlion import Merlion
-
 
 from parser import split_lines, analysis_function, analysis_docstring
 from adapter import Adapter

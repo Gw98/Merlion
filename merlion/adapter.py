@@ -71,7 +71,7 @@ class Adapter(object):
 
 
     def generate_raise(self, element):
-        ele = DocstringRaise(DocstringElementType.Raise)
+        ele = DocstringElement(DocstringElementType.Raise)
         ele.content = DocstringRaise(element.get('name'), element.get('statement'))
         return ele
 
