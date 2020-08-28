@@ -28,7 +28,7 @@ docstring1.elements = [elem0, elem1, elem2, elem3, elem4]
 docstring2 = Docstring(6, 8, 1)
 docstring2.elements = [elem0, elem1, elem2, elem3, elem4]
 
-file = File(input_file_name="test.py", prog=["def func1(param0:int = 10, param1 = \"string\") -> bool:\n",
-                                             "\"\"\" docstring\n", "\"\"\"\n", "pass\n", "\n", "def func2(param0:int = 10, param1 = \"string\") -> bool:\n", "\"\"\" docstring\n", "\"\"\"\n", "pass\n"], docs_list=[docstring1, docstring2], target_style=DocstringStyle.Numpydoc)
+file = File(input_file_name="test.py", docs_list=[
+            docstring1, docstring2], target_style=DocstringStyle.Numpydoc)
 
 file.format()

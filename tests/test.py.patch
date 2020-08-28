@@ -1,9 +1,6 @@
 --- a/test.py
 +++ b/test.py
-@@ -1,4 +1,34 @@
- def func(param0:int = 10, param1 = "string") -> bool:
--""" docstring
--"""
+@@ -0,0 +1,64 @@
 +    """This is summary.
 +
 +    This is more detailed description.
@@ -36,4 +33,35 @@
 +    in the docstring
 +
 +    """
- pass
++    """This is summary.
++
++    This is more detailed description.
++
++    Parameters
++    ----------
++    param0 : int
++        the description of param0, it is very long balabalabalabalabalabblalblab
++        lalblalbalblalblablalblalblabllablalabalababalalbalblalblalblallabalaba
++    param1 : 
++        the description of param0, it is very long balabalabalabalabalabblalblab
++        lalblalbalblalblablalblalblabllablalabalababalalbalblalblalblallabalaba
++
++    Return
++    ------
++    bool
++        true for success, false for failure
++
++    Raise
++    -----
++    IOException
++        it is also very long balabalbabalabalabalabalabalabalabalabalabalababala
++        balbaballbalblalbalblalblalbalblalblablalblalblallblalbalblalbalbalblalb
++        la
++
++    Note
++    ----
++    PEP 484_ type annotations are supported. If attribute, parameter, and return
++     types are annotated according to PEP 484_, they do not need to be included
++    in the docstring
++
++    """
