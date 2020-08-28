@@ -1,0 +1,55 @@
+--- a/test_reST.py
++++ b/test_reST.py
+@@ -1,9 +1,49 @@
+ def func(param0: int = 10, param1 = "string") -> bool:
+-"""docstring
+-"""
++    '''This is summary.
++
++    This is more detailed description.
++
++        :param int param0: the description of param0, it is very long balabalaba
++            labalabalabblalblablalblalbalblalblablalblalblabllablalabalababalalb
++            alblalblalblallabalabaend
++        :param param1: the description of param0, it is very long balabalabalaba
++            labalabblalblablalblalbalblalblablalblalblabllablalabalababalalbalbl
++            alblalblallabalabaend
++        :param test: it is also very long balabalbabalabalabalabalabalabalabalab
++            alabalababalabalbaballbalblalbalblalblalbalblalblablalblalblallblalb
++            alblalbalbalblalblaend
++        :return: true for success, false for failure
++        :rtype: bool
++        :raise IOException: it is also very long balabalbabalabalabalabalabalaba
++            labalabalabalababalabalbaballbalblalbalblalblalbalblalblablalblalbla
++            llblalbalblalbalbalblalblaend
++        :note: PEP 484_ type annotations are supported. If attribute, parameter,
++             and return types are annotated according to PEP 484_, they do not n
++            eed to be included in the docstring
++    '''
+ pass 
+ def func(param0: int = 10, param1 = "string") -> bool:
+-"""docstring
+-"""
++    '''This is summary.
++
++    This is more detailed description.
++
++        :param int param0: the description of param0, it is very long balabalaba
++            labalabalabblalblablalblalbalblalblablalblalblabllablalabalababalalb
++            alblalblalblallabalabaend
++        :param param1: the description of param0, it is very long balabalabalaba
++            labalabblalblablalblalbalblalblablalblalblabllablalabalababalalbalbl
++            alblalblallabalabaend
++        :param test: it is also very long balabalbabalabalabalabalabalabalabalab
++            alabalababalabalbaballbalblalbalblalblalbalblalblablalblalblallblalb
++            alblalbalbalblalblaend
++        :return: true for success, false for failure
++        :rtype: bool
++        :raise IOException: it is also very long balabalbabalabalabalabalabalaba
++            labalabalabalababalabalbaballbalblalbalblalblalbalblalblablalblalbla
++            llblalbalblalbalbalblalblaend
++        :note: PEP 484_ type annotations are supported. If attribute, parameter,
++             and return types are annotated according to PEP 484_, they do not n
++            eed to be included in the docstring
++    '''
+ pass
