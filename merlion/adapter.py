@@ -61,10 +61,10 @@ class Adapter(object):
         return ele
 
 
-    # def generate_note(self, element):
-    #     ele = DocstringElement(DocstringElementType.Note)
-    #     ele.content = DocstringRaise(element.get('name'), element.get('statement'))
-    #     return ele
+    def generate_note(self, element):
+        ele = DocstringElement(DocstringElementType.Note)
+        ele.content = DocstringRaise(element.get('name'), element.get('statement'))
+        return ele
 
 
 # (param/return/raise/yield/example/note/attribute or others)
