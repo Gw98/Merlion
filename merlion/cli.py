@@ -27,10 +27,13 @@ def main():
 
     with open('test_case.py', 'r') as f:
         source = f.read()
+    import pdb
+    pdb.set_trace()
+    prog = source.splitlines(keepends=True)
 
     # File.program is needed
     file = File(input_file_name="test_case.py", docs_list=adpt.docstrings,
-                target_style=DocstringStyle.Numpydoc)
+                target_style=DocstringStyle.Numpydoc, prog=prog)
     file.format()
 
     return 0
