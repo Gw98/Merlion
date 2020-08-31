@@ -287,7 +287,10 @@ class Docstring:
                     else:
                         string = content.param_name + ": " + content.description
                 elif isinstance(content, DocstringReturn):
-                    string = content.type_name + ": " + content.description
+                    if content.type_name is not None:
+                        string = content.type_name + ": " + content.description
+                    else:
+                        string = content.description
                 elif isinstance(content, DocstringRaise):
                     string = content.type_name + ": " + content.description
                 elif isinstance(content, DocstringOther):

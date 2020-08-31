@@ -27,8 +27,6 @@ def main():
 
     with open('test_case.py', 'r') as f:
         source = f.read()
-    import pdb
-    pdb.set_trace()
     prog = source.splitlines(keepends=True)
 
     # File.program is needed
