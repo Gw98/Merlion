@@ -4,6 +4,8 @@ Merlion
 
 A Python Docstring Style Converter(Reformatter)
 
+.. contents:: :local:
+
 Description
 -----------
 
@@ -31,6 +33,9 @@ Usage
 - install from Pypi
 
 TODOs
+
+Example
+-------
 
 
 Credits
