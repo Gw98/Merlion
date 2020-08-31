@@ -1,6 +1,6 @@
 --- a/test_Google.py
 +++ b/test_Google.py
-@@ -1,9 +1,63 @@
+@@ -1,9 +1,65 @@
  def func(param0: int = 10, param1 = "string") -> bool:
 -"""docstring
 -"""
@@ -19,8 +19,9 @@
 +            babalabalbaballbalblalbalblalblalbalblalblablalblalblallblalbalblalb
 +            albalblalblaend
 +
-+    Return:
++    Returns:
 +        bool: true for success, false for failure
++        true for success, false for failure
 +
 +    Raise:
 +        IOException: it is also very long balabalbabalabalabalabalabalabalabalab
@@ -52,8 +53,9 @@
 +            babalabalbaballbalblalbalblalblalbalblalblablalblalblallblalbalblalb
 +            albalblalblaend
 +
-+    Return:
++    Returns:
 +        bool: true for success, false for failure
++        true for success, false for failure
 +
 +    Raise:
 +        IOException: it is also very long balabalbabalabalabalabalabalabalabalab

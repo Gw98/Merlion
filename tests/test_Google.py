@@ -16,6 +16,10 @@ elem1 = DocstringElement(DocstringElementType.Return)
 elem1.content = DocstringReturn(
     type_name="bool", description="true for success, false for failure")
 
+elem6 = DocstringElement(DocstringElementType.Return)
+elem6.content = DocstringReturn(
+    description="true for success, false for failure")
+
 elem2 = DocstringElement(DocstringElementType.Raise)
 elem2.content = DocstringRaise(
     "IOException", "it is also very long balabalbabalabalabalabalabalabalabalabalabalababalabalbaballbalblalbalblalblalbalblalblablalblalblallblalbalblalbalbalblalblaend")
@@ -26,11 +30,11 @@ elem3.content = DocstringOther(
 
 
 docstring1 = Docstring(1, 3, 1)
-docstring1.elements = [elem0, elem1, elem2, elem3, elem4, elem5]
+docstring1.elements = [elem0, elem1, elem2, elem3, elem4, elem5, elem6]
 
 
 docstring2 = Docstring(6, 8, 1)
-docstring2.elements = [elem0, elem1, elem2, elem3, elem4, elem5]
+docstring2.elements = [elem0, elem1, elem2, elem3, elem4, elem5, elem6]
 
 file = File(input_file_name="test_Google.py", prog=["def func(param0: int = 10, param1 = \"string\") -> bool:\n", "\"\"\"docstring\n", "\"\"\"\n", "pass", "\n", "def func(param0: int = 10, param1 = \"string\") -> bool:\n", "\"\"\"docstring\n", "\"\"\"\n", "pass\n"], quote="\'", docs_list=[
             docstring1, docstring2], target_style=DocstringStyle.Google)
