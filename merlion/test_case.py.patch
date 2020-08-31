@@ -1,6 +1,6 @@
 --- a/test_case.py
 +++ b/test_case.py
-@@ -1,42 +1,65 @@
+@@ -1,42 +1,64 @@
  def func_epytext(param1: int, param2='default val') -> bool:
 -    """This is an example function with docstrings in Epytext(javadoc-like) style.
 -    @param param1: int: This is the first parameter.
@@ -89,8 +89,7 @@
 +
 +    Note
 +    ----
-+    None
-+        This is a note
++    This is a note
 +
 +    """
      """

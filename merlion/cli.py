@@ -1,37 +1,52 @@
 """Console script for merlion."""
 import argparse
+import os
 import sys
+from parser import analysis_docstring, analysis_function, split_lines
 
-
-from parser import split_lines, analysis_function, analysis_docstring
 from adapter import Adapter
-from format import File, DocstringStyle
+from format import DocstringStyle, File
+
+STYLE_TABLE = {
+    'Google': DocstringStyle.Google,
+    'Numpydoc': DocstringStyle.Numpydoc,
+    'reST': DocstringStyle.reST,
+    'Epytext': DocstringStyle.Epytext
+}
 
 
 def main():
     """Console script for merlion."""
     parser = argparse.ArgumentParser()
-    parser.add_argument('_', nargs='*')
+    parser.add_argument('filename')
+    parser.add_argument('--docstyle', default='Numpydoc')
     args = parser.parse_args()
 
-    # print("Arguments: " + str(args._))
-    # print("Replace this message by putting your code into "
-    #       "merlion.cli.main")
+    if not os.path.exists(args.filename):
+        raise Exception('[Error] can not find file: {}'.format(args.filename))
 
-    res = split_lines("test_case.py")
+    target_style = STYLE_TABLE.get(args.docstyle, None)
+    if not target_style:
+        raise Exception('[Error] invalid docstring style : {}.\n Please Select in Numpydoc, Google, reST or Epytext.'.format(args.docstyle))
+
+    import pdb
+    pdb.set_trace()
+
+    res = split_lines(args.filename)
     res = analysis_function(res)
     res = analysis_docstring(res)
 
     adpt = Adapter()
     adpt.adapter(res)
 
-    with open('test_case.py', 'r') as f:
+    with open(args.filename, 'r') as f:
         source = f.read()
     prog = source.splitlines(keepends=True)
 
+
     # File.program is needed
-    file = File(input_file_name="test_case.py", docs_list=adpt.docstrings,
-                target_style=DocstringStyle.Numpydoc, prog=prog)
+    file = File(input_file_name=args.filename, docs_list=adpt.docstrings,
+                target_style=target_style, prog=prog)
     file.format()
 
     return 0

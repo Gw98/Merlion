@@ -63,7 +63,7 @@ class Adapter(object):
 
     def generate_note(self, element):
         ele = DocstringElement(DocstringElementType.Note)
-        ele.content = DocstringRaise(element.get('name'), element.get('statement'))
+        ele.content = DocstringOther(element.get('name'), single_description=element.get('statement'))
         return ele
 
 
