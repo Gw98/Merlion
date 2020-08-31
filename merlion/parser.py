@@ -1,4 +1,3 @@
-import json
 from enum import Enum
 import re
 
@@ -525,38 +524,28 @@ def merge_info(info1, info2):
 
 
 def analysis_docstring(items):
-    ret = []
     for i, item in enumerate(items):
         if items[i].types == ItemType.Docstring and i > 0 and items[i - 1].types == ItemType.Function:
             item.info = merge_info(item.info, items[i - 1].info)
             style = judge_docstring(item)
-            ret.append(style_func[style](item))
-    return ret
-
-
-def load_file_to_string(file):
-    file_object = open(file)
-    try:
-        file_context = file_object.read()
-    finally:
-        file_object.close()
-    return file_context
+            item = style_func[style](item)
+    return items
 
 
 def parser(path):
     res = split_lines(path)
     res = analysis_function(res)
     res = analysis_docstring(res)
-    return res, load_file_to_string(path), path
+    return res
 
 
 if __name__ == '__main__':
-    print(parser("./parser.py"))
+    print(parser("./main.py"))
     '''
     SORRY FOR MY POOR ENGLISH
-
+    
     res : list of Item
-
+    
     class Item:
         def __init__(self, start=0, end=0, types=ItemType.Normal, text="", info={}):
             self.types = types
@@ -564,20 +553,19 @@ if __name__ == '__main__':
             self.end = end
             self.text = text
             self.info = info
-
+            
     types: type of item
         class ItemType(Enum):
-            Function = 0            class or function (will not return)
+            Function = 0            class or function
             Docstring = 1           docstring means all comment with multiline, maybe not real docstring. 
-                                    a Docstring is a docstring only when it's after function (only return
-                                    real docstring)
-            Normal = 2              just normal code (will not return)
+                                    a Docstring is a docstring only when it's after function
+            Normal = 2              just normal code
     start: start line of item
     end: end line of item
     text: raw text of item
     indentation: indentation of docstring
     info: other infos
-        for Function: ( Will be discarded )
+        for Function:
             params: map of params
                 key: param name
                 value: map of other info
@@ -596,59 +584,50 @@ if __name__ == '__main__':
                 p_type: it's type(if it has a type)
                 statement:  Description if it has description(all " " and "\n" at front and back will be removed, 
                             others will be kept)
-
+                
     '''
 
-    # The following is the test case.
 
+# The following is the test case.
 
 def func_epytext(param1: int, param2='default val') -> bool:
     """This is an example function with docstrings in Epytext(javadoc-like) style.
-
     @param param1: int: This is the first parameter.
     @param param2: This is the second parameter. (Default value = 'default val')
     @return: The return value. True for success, False otherwise.
     @rtype: bool
     @raise keyError: raises key exception
     @raise TypeError: raises type exception
-
     """
     pass
 
 
 def func_rest(param1: int, param2='default val') -> bool:
     """This is an example function with docstrings in reST style.
-
     Life can be good,
     Life can be bad,
     Life can mostly cheerful,
     But sometimes sad.
-
     :param param1: int: This is the first parameter.
     :param param2: This is the second parameter. (Default value = 'default val')
     :returns: The return value. True for success, False otherwise.
     :rtype: bool
     :raises keyError: raises key exception
     :raises TypeError: raises type exception
-
     """
     pass
 
 
 def func_google(param1: int, param2='default val') -> bool:
     """This is an example function with docstrings in Google style.
-
     Args:
       param1: int: This is the first parameter.
       param2: This is the second parameter. (Default value = 'default val')
-
     Returns:
       bool: The return value. True for success, False otherwise.
-
     Raises:
       keyError: raises key exception
       TypeError: raises type exception
-
     Note:
       This is a note
     """

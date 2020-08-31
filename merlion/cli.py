@@ -18,15 +18,18 @@ def main():
     # print("Replace this message by putting your code into "
     #       "merlion.cli.main")
 
-    res = split_lines("./parser.py")
+    res = split_lines("test_case.py")
     res = analysis_function(res)
     res = analysis_docstring(res)
 
     adpt = Adapter()
     adpt.adapter(res)
 
+    with open('test_case.py', 'r') as f:
+        source = f.read()
+
     # File.program is needed
-    file = File(input_file_name="parser.py", docs_list=adpt.docstrings,
+    file = File(input_file_name="test_case.py", docs_list=adpt.docstrings,
                 target_style=DocstringStyle.Numpydoc)
     file.format()
 
